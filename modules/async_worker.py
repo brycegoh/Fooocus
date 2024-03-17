@@ -366,6 +366,8 @@ def worker():
                     controlnet_canny_path = modules.config.downloading_controlnet_canny()
                 if len(cn_tasks[flags.cn_cpds]) > 0:
                     controlnet_cpds_path = modules.config.downloading_controlnet_cpds()
+                if len(cn_tasks[flags.cn_depth]) > 0:
+                    controlnet_depth_path = modules.config.downloading_controlnet_depth()
                 if len(cn_tasks[flags.cn_ip]) > 0:
                     clip_vision_path, ip_negative_path, ip_adapter_path = modules.config.downloading_ip_adapters('ip')
                 if len(cn_tasks[flags.cn_ip_face]) > 0:
@@ -374,7 +376,7 @@ def worker():
                 progressbar(async_task, 1, 'Loading control models ...')
 
         # Load or unload CNs
-        pipeline.refresh_controlnets([controlnet_canny_path, controlnet_cpds_path])
+        pipeline.refresh_controlnets([controlnet_canny_path, controlnet_cpds_path, controlnet_depth_path])
         ip_adapter.load_ip_adapter(clip_vision_path, ip_negative_path, ip_adapter_path)
         ip_adapter.load_ip_adapter(clip_vision_path, ip_negative_path, ip_adapter_face_path)
 
@@ -702,6 +704,18 @@ def worker():
                 if debugging_cn_preprocessor:
                     yield_result(async_task, cn_img, do_not_show_finished_images=True)
                     return
+            for task in cn_tasks[flags.cn_depth]:
+                cn_img, cn_stop, cn_weight = task
+                cn_img = resize_image(HWC3(cn_img), width=width, height=height)
+
+                if not skipping_cn_preprocessor:
+                    cn_img = preprocessors.depth(cn_img)
+
+                cn_img = HWC3(cn_img)
+                task[0] = core.numpy_to_pytorch(cn_img)
+                if debugging_cn_preprocessor:
+                    yield_result(async_task, cn_img, do_not_show_finished_images=True)
+                    return
             for task in cn_tasks[flags.cn_ip]:
                 cn_img, cn_stop, cn_weight = task
                 cn_img = HWC3(cn_img)
@@ -794,6 +808,7 @@ def worker():
                     for cn_flag, cn_path in [
                         (flags.cn_canny, controlnet_canny_path),
                         (flags.cn_cpds, controlnet_cpds_path)
+                        (flags.cn_depth, controlnet_depth_path)
                     ]:
                         for cn_img, cn_stop, cn_weight in cn_tasks[cn_flag]:
                             positive_cond, negative_cond = core.apply_controlnet(

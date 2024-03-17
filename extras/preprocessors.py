@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
-
+from transformers import DPTImageProcessor, DPTForDepthEstimation
+import torch
 
 def centered_canny(x: np.ndarray, canny_low_threshold, canny_high_threshold):
     assert isinstance(x, np.ndarray)
@@ -79,3 +80,23 @@ def cpds(x):
     result = density + offset
 
     return norm255(result, low=4, high=96).clip(0, 255).astype(np.uint8)
+
+def depth(x):
+    # depth estimate x whereby x is a image as a numpy array
+    # Load the model
+    processor = DPTImageProcessor.from_pretrained("Intel/dpt-beit-large-512")
+    model = DPTForDepthEstimation.from_pretrained("Intel/dpt-beit-large-512")
+    # Preprocess the image
+    inputs = processor(images=x, return_tensors="pt")
+    # Perform depth estimation
+    outputs = model(**inputs)
+    predicted_depth = outputs.predicted_depth
+    prediction = torch.nn.functional.interpolate(
+        predicted_depth.unsqueeze(1),
+        size=x.size[::-1],
+        mode="bicubic",
+        align_corners=False,
+    )
+    output = prediction.squeeze().cpu().numpy()
+    formatted = (output * 255 / np.max(output)).astype("uint8")
+    return formatted
