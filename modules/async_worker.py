@@ -807,7 +807,7 @@ def worker():
                 if 'cn' in goals:
                     for cn_flag, cn_path in [
                         (flags.cn_canny, controlnet_canny_path),
-                        (flags.cn_cpds, controlnet_cpds_path)
+                        (flags.cn_cpds, controlnet_cpds_path),
                         (flags.cn_depth, controlnet_depth_path)
                     ]:
                         for cn_img, cn_stop, cn_weight in cn_tasks[cn_flag]:
