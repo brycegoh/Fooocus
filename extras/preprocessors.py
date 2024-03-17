@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from transformers import pipeline
+from PIL import Image
 import torch
 
 def centered_canny(x: np.ndarray, canny_low_threshold, canny_high_threshold):
@@ -85,9 +86,9 @@ def depth(np_image):
     # deph estimate x whereby x is a image as a numpy array
     # Load the model
     print("Loading depth model...")
-    
+    image = Image.fromarray(np_image)
     depth_estimator = pipeline('depth-estimation')
-    image = depth_estimator(np_image)['depth']
+    image = depth_estimator(image)['depth']
     image = np.array(image)
     image = image[:, :, None]
     image = np.concatenate([image, image, image], axis=2)
