@@ -558,7 +558,7 @@ def downloading_controlnet_cpds():
 
 def downloading_controlnet_depth():
     load_file_from_url(
-        url='https://huggingface.co/stabilityai/control-lora/blob/main/control-LoRAs-rank256/control-lora-depth-rank128.safetensors',
+        url='https://huggingface.co/stabilityai/control-lora/blob/main/control-LoRAs-rank128/control-lora-depth-rank128.safetensors',
         model_dir=path_controlnet,
         file_name='control-lora-depth-rank128.safetensors'
     )
