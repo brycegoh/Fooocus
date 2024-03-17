@@ -84,6 +84,7 @@ def cpds(x):
 def depth(x):
     # depth estimate x whereby x is a image as a numpy array
     # Load the model
+    print("Loading depth model...")
     processor = DPTImageProcessor.from_pretrained("Intel/dpt-beit-large-512")
     model = DPTForDepthEstimation.from_pretrained("Intel/dpt-beit-large-512")
     # Preprocess the image
@@ -99,4 +100,7 @@ def depth(x):
     )
     output = prediction.squeeze().cpu().numpy()
     formatted = (output * 255 / np.max(output)).astype("uint8")
+
+    # save image
+    cv2.imwrite("depth.jpg", formatted)
     return formatted

@@ -362,7 +362,6 @@ def worker():
                     mixing_image_prompt_and_inpaint:
                 goals.append('cn')
                 progressbar(async_task, 1, 'Downloading control models ...')
-                print(cn_tasks)
                 if len(cn_tasks[flags.cn_canny]) > 0:
                     controlnet_canny_path = modules.config.downloading_controlnet_canny()
                 if len(cn_tasks[flags.cn_cpds]) > 0:
