@@ -23,6 +23,7 @@ async_task = AsyncTask(params)
 for result in async_task.start():
     if len(result) == 0:
         time.sleep(1)
+        continue
     print(result)
     
     if result[0] == 'finish':
