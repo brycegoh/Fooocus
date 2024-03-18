@@ -12,9 +12,7 @@ patch_all()
 class TaskParams(object):
     def __init__(
         self, 
-        prompt: str,
-        
-        # default params
+        prompt: str = '',
         uov_input_image: np.ndarray | None = None,
         uov_method: str = 'Disabled', # [ 'Disabled', 'Vary (Subtle)', 'Vary (Strong)', 'Upscale (1.5x)', 'Upscale (2x)', 'Upscale (Fast 2x)', 'Upscale (Custom)']
         outpaint_selections: List[str] = [], # [ 'top', 'bottom', 'left', 'right' ]

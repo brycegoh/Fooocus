@@ -57,7 +57,7 @@ def prepare_environment():
 
     if REINSTALL_ALL or not requirements_met(requirements_file):
         run_pip(f"install -r \"{requirements_file}\"", "requirements")
-        run_pip(f"install natten==0.15.1+torch220cu121 -f https://shi-labs.com/natten/wheels/")
+        run_pip(f"install natten==0.15.1+torch220cu121 -f https://shi-labs.com/natten/wheels/", "natten")
 
     return
 
