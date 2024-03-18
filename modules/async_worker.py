@@ -1062,12 +1062,9 @@ def worker():
         time.sleep(0.01)
         if len(async_tasks) > 0:
             task = async_tasks.pop(0)
-            generate_image_grid = task.args.pop(0)
-
+            print(task)
             try:
                 handler(task)
-                if generate_image_grid:
-                    build_image_wall(task)
                 task.yields.append(['finish', task.results])
                 pipeline.prepare_text_encoder(async_call=True)
             except:
