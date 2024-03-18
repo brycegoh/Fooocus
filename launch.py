@@ -123,5 +123,5 @@ def download_models():
 
 download_models()
 
-
-from webui import *
+print("environment ready.")
+# from webui import *

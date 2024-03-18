@@ -1,18 +1,183 @@
 import threading
 from modules.patch import PatchSettings, patch_settings, patch_all
+from enum import Enum
+from typing import Dict, List, Tuple
+import numpy as np
+import random
+from modules import config
+
 
 patch_all()
 
+class TaskParams(object):
+    def __init__(
+        self, 
+        prompt: str,
+        
+        
+        # default params
+        uov_input_image: np.ndarray | None = None,
+        uov_method: str = 'Disabled', # [ 'Disabled', 'Vary (Subtle)', 'Vary (Strong)', 'Upscale (1.5x)', 'Upscale (2x)', 'Upscale (Fast 2x)', 'Upscale (Custom)']
+        outpaint_selections: List[str] = [], # [ 'top', 'bottom', 'left', 'right' ]
+        image_seed: int | None = None,
+        sharpness: float = config.default_sample_sharpness,
+        output_format: str = config.default_output_format,
+        performance_selection: str = config.default_performance, # 'Quality', 'Speed', 'Extreme Speed'
+        inpaint_input_image: Dict[str, np.ndarray] | None = None, # { 'mask': np.ndarray, 'image': np.ndarray  }
+        image_prompts: List[Tuple[np.ndarray, float, float, str]] = [], # cn_img, cn_stop, cn_weight, cn_type (ImagePrompt, FaceSwap, PyraCanny, CPDS, Depth)
+        inpaint_additional_prompt: str = '',
+        guidance_scale: float =  config.default_cfg_scale,
+        negative_prompt: str = '',
+        aspect_ratios_selection: str = config.default_aspect_ratio,
+        image_number: int = config.default_image_number,
+        base_model_name: str = config.default_base_model_name,
+        refiner_model_name: str = config.default_refiner_model_name,
+        refiner_switch: float =  config.default_refiner_switch,
+        loras: List[Tuple[str, float]] = config.default_loras, #[ [lora_enabled, lora_model, lora_weight] ]
+        style_selections: List[str] = config.default_styles,
+        # advanced params
+        disable_preview: bool = True,
+        adm_scaler_positive: float = 1.5,
+        adm_scaler_negative: float = 0.8,
+        adm_scaler_end: float = 0.3,
+        adaptive_cfg: float = 7.0,
+        sampler_name: str = config.default_sampler,
+        scheduler_name: str = config.default_scheduler,
+        generate_image_grid: bool = False,
+        overwrite_step: int = -1,
+        overwrite_switch: int = -1,
+        overwrite_width: int = -1,
+        overwrite_height: int = -1,
+        overwrite_vary_strength: float = -1,
+        overwrite_upscale_strength: float = -1,
+        mixing_image_prompt_and_vary_upscale: bool = False,
+        mixing_image_prompt_and_inpaint: bool = False,
+        debugging_cn_preprocessor: bool = False,
+        skipping_cn_preprocessor: bool = False,
+        controlnet_softness: float = 0.25,
+        canny_low_threshold: int = 64,
+        canny_high_threshold: int = 128,
+        refiner_swap_method: str = 'joint',
+        freeu_enabled: bool = False,
+        freeu_b1: float | None = None,
+        freeu_b2: float | None = None,
+        freeu_s1: float | None = None,
+        freeu_s2: float | None = None,
+        debugging_inpaint_preprocessor: bool = False,
+        inpaint_disable_initial_latent: bool = False,
+        inpaint_engine: str =  'v2.6',
+        inpaint_strength: float = 1.0,
+        inpaint_respective_field: float = 0.618,
+        inpaint_mask_upload_checkbox: bool = False,
+        invert_mask_checkbox: bool = False,
+        inpaint_erode_or_dilate: int = 0
+    ):
+        self.prompt = prompt
+        self.performance_selection = performance_selection
+        self.image_seed = image_seed
+        self.sharpness = sharpness
+        self.uov_input_image = uov_input_image
+        self.uov_method = uov_method
+        self.outpaint_selections = outpaint_selections
+        self.output_format = output_format
+        self.inpaint_input_image = inpaint_input_image
+        self.image_prompts = image_prompts
+        self.inpaint_additional_prompt = inpaint_additional_prompt
+        self.guidance_scale = guidance_scale
+        self.negative_prompt = negative_prompt
+        self.aspect_ratios_selection = aspect_ratios_selection
+        self.image_number = image_number
+        self.base_model_name = base_model_name
+        self.refiner_model_name = refiner_model_name
+        self.refiner_switch = refiner_switch
+        self.loras = loras
+        self.style_selections = style_selections
+        self.disable_preview = disable_preview
+        self.adm_scaler_positive = adm_scaler_positive
+        self.adm_scaler_negative = adm_scaler_negative
+        self.adm_scaler_end = adm_scaler_end
+        self.adaptive_cfg = adaptive_cfg
+        self.sampler_name = sampler_name
+        self.scheduler_name = scheduler_name
+        self.generate_image_grid = generate_image_grid
+        self.overwrite_step = overwrite_step
+        self.overwrite_switch = overwrite_switch
+        self.overwrite_width = overwrite_width
+        self.overwrite_height = overwrite_height
+        self.overwrite_vary_strength = overwrite_vary_strength
+        self.overwrite_upscale_strength = overwrite_upscale_strength
+        self.mixing_image_prompt_and_vary_upscale = mixing_image_prompt_and_vary_upscale
+        self.mixing_image_prompt_and_inpaint = mixing_image_prompt_and_inpaint
+        self.debugging_cn_preprocessor = debugging_cn_preprocessor
+        self.skipping_cn_preprocessor = skipping_cn_preprocessor
+        self.controlnet_softness = controlnet_softness
+        self.canny_low_threshold = canny_low_threshold
+        self.canny_high_threshold = canny_high_threshold
+        self.refiner_swap_method = refiner_swap_method
+        self.freeu_enabled = freeu_enabled
+        self.freeu_b1 = freeu_b1
+        self.freeu_b2 = freeu_b2
+        self.freeu_s1 = freeu_s1
+        self.freeu_s2 = freeu_s2
+        self.debugging_inpaint_preprocessor = debugging_inpaint_preprocessor
+        self.inpaint_disable_initial_latent = inpaint_disable_initial_latent    
+        self.inpaint_engine = inpaint_engine
+        self.inpaint_strength = inpaint_strength
+        self.inpaint_respective_field = inpaint_respective_field
+        self.inpaint_mask_upload_checkbox = inpaint_mask_upload_checkbox
+        self.invert_mask_checkbox = invert_mask_checkbox
+        self.inpaint_erode_or_dilate = inpaint_erode_or_dilate
+        
+        if len(self.image_prompts) > 0 and inpaint_input_image is not None:
+            self.mixing_image_prompt_and_inpaint = True
+        if image_seed is None:
+            MIN_SEED = 0
+            MAX_SEED = 2**63 - 1
+            self.image_seed = random.randint(MIN_SEED, MAX_SEED)
+
 class AsyncTask:
-    def __init__(self, args):
+    def __init__(self, args: TaskParams):
         self.args = args
         self.yields = []
         self.results = []
         self.last_stop = False
         self.processing = False
 
+    def start(self):
+        global async_tasks
+        import ldm_patched.modules.model_management as model_management
+        import time
 
-async_tasks = []
+        with model_management.interrupt_processing_mutex:
+            model_management.interrupt_processing = False
+        execution_start_time = time.perf_counter()
+        finished = False
+
+        async_tasks.append(self)
+
+        while not finished:
+            time.sleep(0.01)
+            if len(self.yields) > 0:
+                flag, product = self.yields.pop(0)
+                if flag == 'preview':
+
+                    # help bad internet connection by skipping duplicated preview
+                    if len(self.yields) > 0:  # if we have the next item
+                        if self.yields[0][0] == 'preview':   # if the next item is also a preview
+                            # print('Skipped one preview for better internet connection.')
+                            continue
+                    yield product
+                if flag == 'results':
+                    yield product
+                if flag == 'finish':
+                    yield product
+                    finished = True
+
+        execution_time = time.perf_counter() - execution_start_time
+        print(f'Total time: {execution_time:.2f} seconds')
+        return
+
+async_tasks: List[AsyncTask] = []
 
 
 def worker():
@@ -67,14 +232,11 @@ def worker():
         print(f'[Fooocus] {text}')
         async_task.yields.append(['preview', (number, text, None)])
 
-    def yield_result(async_task, imgs, do_not_show_finished_images=False):
+    def yield_result(async_task, imgs):
         if not isinstance(imgs, list):
             imgs = [imgs]
 
         async_task.results = async_task.results + imgs
-
-        if do_not_show_finished_images:
-            return
 
         async_task.yields.append(['results', async_task.results])
         return
@@ -133,84 +295,78 @@ def worker():
 
     @torch.no_grad()
     @torch.inference_mode()
-    def handler(async_task):
+    def handler(async_task: AsyncTask):
         execution_start_time = time.perf_counter()
         async_task.processing = True
 
         args = async_task.args
-        args.reverse()
+        # args.reverse()
 
-        prompt = args.pop()
-        negative_prompt = args.pop()
-        style_selections = args.pop()
-        performance_selection = Performance(args.pop())
-        aspect_ratios_selection = args.pop()
-        image_number = args.pop()
-        output_format = args.pop()
-        image_seed = args.pop()
-        sharpness = args.pop()
-        guidance_scale = args.pop()
-        base_model_name = args.pop()
-        refiner_model_name = args.pop()
-        refiner_switch = args.pop()
-        loras = apply_enabled_loras([[bool(args.pop()), str(args.pop()), float(args.pop()), ] for _ in range(modules.config.default_max_lora_number)])
-        input_image_checkbox = args.pop()
-        current_tab = args.pop()
-        uov_method = args.pop()
-        uov_input_image = args.pop()
-        outpaint_selections = args.pop()
-        inpaint_input_image = args.pop()
-        inpaint_additional_prompt = args.pop()
-        inpaint_mask_image_upload = args.pop()
+        prompt = args.prompt
+        negative_prompt = args.negative_prompt
+        style_selections = args.style_selections
+        performance_selection = Performance(args.performance_selection)
+        aspect_ratios_selection = args.aspect_ratios_selection
+        image_number = args.image_number
+        output_format = args.output_format
+        image_seed = args.image_seed
+        sharpness = args.sharpness
+        guidance_scale = args.guidance_scale
+        base_model_name = args.base_model_name
+        refiner_model_name = args.refiner_model_name
+        refiner_switch = args.refiner_switch
+        loras = apply_enabled_loras(args.loras)
+        input_image_checkbox = args.uov_input_image is not None or args.inpaint_input_image is not None or len(args.image_prompts) > 0
+        current_tab = 'uov' if args.uov_method != flags.disabled else 'ip' if len(args.image_prompts) > 0 else 'inpaint' if args.inpaint_input_image is not None else None
+        uov_method = args.uov_method
+        uov_input_image = args.uov_input_image
+        outpaint_selections = args.outpaint_selections
+        inpaint_input_image = args.inpaint_input_image
+        inpaint_additional_prompt = args.inpaint_additional_prompt
+        inpaint_mask_image_upload = args.inpaint_input_image['mask'] if isinstance(inpaint_input_image, dict) and 'mask' in inpaint_input_image else None
 
-        disable_preview = args.pop()
-        disable_intermediate_results = args.pop()
-        disable_seed_increment = args.pop()
-        adm_scaler_positive = args.pop()
-        adm_scaler_negative = args.pop()
-        adm_scaler_end = args.pop()
-        adaptive_cfg = args.pop()
-        sampler_name = args.pop()
-        scheduler_name = args.pop()
-        overwrite_step = args.pop()
-        overwrite_switch = args.pop()
-        overwrite_width = args.pop()
-        overwrite_height = args.pop()
-        overwrite_vary_strength = args.pop()
-        overwrite_upscale_strength = args.pop()
-        mixing_image_prompt_and_vary_upscale = args.pop()
-        mixing_image_prompt_and_inpaint = args.pop()
-        debugging_cn_preprocessor = args.pop()
-        skipping_cn_preprocessor = args.pop()
-        canny_low_threshold = args.pop()
-        canny_high_threshold = args.pop()
-        refiner_swap_method = args.pop()
-        controlnet_softness = args.pop()
-        freeu_enabled = args.pop()
-        freeu_b1 = args.pop()
-        freeu_b2 = args.pop()
-        freeu_s1 = args.pop()
-        freeu_s2 = args.pop()
-        debugging_inpaint_preprocessor = args.pop()
-        inpaint_disable_initial_latent = args.pop()
-        inpaint_engine = args.pop()
-        inpaint_strength = args.pop()
-        inpaint_respective_field = args.pop()
-        inpaint_mask_upload_checkbox = args.pop()
-        invert_mask_checkbox = args.pop()
-        inpaint_erode_or_dilate = args.pop()
+        disable_preview = args.disable_preview
+        adm_scaler_positive = args.adm_scaler_positive
+        adm_scaler_negative = args.adm_scaler_negative
+        adm_scaler_end = args.adm_scaler_end
+        adaptive_cfg = args.adaptive_cfg
+        sampler_name = args.sampler_name
+        scheduler_name = args.scheduler_name
+        overwrite_step = args.overwrite_step
+        overwrite_switch = args.overwrite_switch
+        overwrite_width = args.overwrite_width
+        overwrite_height = args.overwrite_height
+        overwrite_vary_strength = args.overwrite_vary_strength
+        overwrite_upscale_strength = args.overwrite_vary_strength
+        mixing_image_prompt_and_vary_upscale = args.mixing_image_prompt_and_vary_upscale
+        mixing_image_prompt_and_inpaint = args.mixing_image_prompt_and_inpaint
+        debugging_cn_preprocessor = args.debugging_cn_preprocessor
+        skipping_cn_preprocessor = args.skipping_cn_preprocessor
+        canny_low_threshold = args.canny_low_threshold
+        canny_high_threshold = args.canny_high_threshold
+        refiner_swap_method = args.refiner_swap_method
+        controlnet_softness = args.controlnet_softness
+        freeu_enabled = args.freeu_enabled
+        freeu_b1 = args.freeu_b1
+        freeu_b2 = args.freeu_b2
+        freeu_s1 = args.freeu_s1
+        freeu_s2 = args.freeu_s2
+        debugging_inpaint_preprocessor = args.debugging_inpaint_preprocessor
+        inpaint_disable_initial_latent = args.inpaint_disable_initial_latent
+        inpaint_engine = args.inpaint_engine
+        inpaint_strength = args.inpaint_strength
+        inpaint_respective_field = args.inpaint_respective_field
+        inpaint_mask_upload_checkbox = inpaint_mask_image_upload is not None
+        invert_mask_checkbox = args.invert_mask_checkbox
+        inpaint_erode_or_dilate = args.inpaint_erode_or_dilate
 
-        save_metadata_to_images = args.pop() if not args_manager.args.disable_metadata else False
-        metadata_scheme = MetadataScheme(args.pop()) if not args_manager.args.disable_metadata else MetadataScheme.FOOOCUS
+        # save_metadata_to_images = args. if not args_manager.args.disable_metadata else False
+        # metadata_scheme = MetadataScheme() if not args_manager.args.disable_metadata else MetadataScheme.FOOOCUS
 
         cn_tasks = {x: [] for x in flags.ip_list}
-        for _ in range(flags.controlnet_image_count):
-            cn_img = args.pop()
-            cn_stop = args.pop()
-            cn_weight = args.pop()
-            cn_type = args.pop()
-            if cn_img is not None:
-                cn_tasks[cn_type].append([cn_img, cn_stop, cn_weight])
+        for img_prompt in args.image_prompts:
+            cn_img, cn_stop, cn_weight, cn_type = img_prompt
+            cn_tasks[cn_type].append([cn_img, cn_stop, cn_weight])
 
         outpaint_selections = [o.lower() for o in outpaint_selections]
         base_model_additional_loras = []
@@ -424,10 +580,7 @@ def worker():
             tasks = []
             
             for i in range(image_number):
-                if disable_seed_increment:
-                    task_seed = seed
-                else:
-                    task_seed = (seed + i) % (constants.MAX_SEED + 1)  # randint is inclusive, % is not
+                task_seed = (seed + i) % (constants.MAX_SEED + 1)  # randint is inclusive, % is not
 
                 task_rng = random.Random(task_seed)  # may bind to inpaint noise in the future
                 task_prompt = apply_wildcards(prompt, task_rng)
@@ -562,8 +715,8 @@ def worker():
 
             if direct_return:
                 d = [('Upscale (Fast)', 'upscale_fast', '2x')]
-                uov_input_image_path = log(uov_input_image, d, output_format=output_format)
-                yield_result(async_task, uov_input_image_path, do_not_show_finished_images=True)
+                uov_input_image_path = log(uov_input_image, output_format=output_format)
+                yield_result(async_task, uov_input_image_path)
                 return
 
             tiled = True
@@ -627,8 +780,7 @@ def worker():
             )
 
             if debugging_inpaint_preprocessor:
-                yield_result(async_task, inpaint_worker.current_task.visualize_mask_processing(),
-                             do_not_show_finished_images=True)
+                yield_result(async_task, inpaint_worker.current_task.visualize_mask_processing())
                 return
 
             progressbar(async_task, 13, 'VAE Inpaint encoding ...')
@@ -691,7 +843,7 @@ def worker():
                 cn_img = HWC3(cn_img)
                 task[0] = core.numpy_to_pytorch(cn_img)
                 if debugging_cn_preprocessor:
-                    yield_result(async_task, cn_img, do_not_show_finished_images=True)
+                    yield_result(async_task, cn_img)
                     return
             for task in cn_tasks[flags.cn_cpds]:
                 cn_img, cn_stop, cn_weight = task
@@ -703,7 +855,7 @@ def worker():
                 cn_img = HWC3(cn_img)
                 task[0] = core.numpy_to_pytorch(cn_img)
                 if debugging_cn_preprocessor:
-                    yield_result(async_task, cn_img, do_not_show_finished_images=True)
+                    yield_result(async_task, cn_img)
                     return
             for task in cn_tasks[flags.cn_depth]:
                 cn_img, cn_stop, cn_weight = task
@@ -715,7 +867,7 @@ def worker():
                 cn_img = HWC3(cn_img)
                 task[0] = core.numpy_to_pytorch(cn_img)
                 if debugging_cn_preprocessor:
-                    yield_result(async_task, cn_img, do_not_show_finished_images=True)
+                    yield_result(async_task, cn_img)
                     return
             for task in cn_tasks[flags.cn_ip]:
                 cn_img, cn_stop, cn_weight = task
@@ -726,7 +878,7 @@ def worker():
 
                 task[0] = ip_adapter.preprocess(cn_img, ip_adapter_path=ip_adapter_path)
                 if debugging_cn_preprocessor:
-                    yield_result(async_task, cn_img, do_not_show_finished_images=True)
+                    yield_result(async_task, cn_img)
                     return
             for task in cn_tasks[flags.cn_ip_face]:
                 cn_img, cn_stop, cn_weight = task
@@ -740,7 +892,7 @@ def worker():
 
                 task[0] = ip_adapter.preprocess(cn_img, ip_adapter_path=ip_adapter_face_path)
                 if debugging_cn_preprocessor:
-                    yield_result(async_task, cn_img, do_not_show_finished_images=True)
+                    yield_result(async_task, cn_img)
                     return
 
             all_ip_tasks = cn_tasks[flags.cn_ip] + cn_tasks[flags.cn_ip_face]
@@ -840,58 +992,58 @@ def worker():
                 if inpaint_worker.current_task is not None:
                     imgs = [inpaint_worker.current_task.post_process(x) for x in imgs]
 
-                img_paths = []
+                imgs_b64 = []
                 for x in imgs:
-                    d = [('Prompt', 'prompt', task['log_positive_prompt']),
-                         ('Negative Prompt', 'negative_prompt', task['log_negative_prompt']),
-                         ('Fooocus V2 Expansion', 'prompt_expansion', task['expansion']),
-                         ('Styles', 'styles', str(raw_style_selections)),
-                         ('Performance', 'performance', performance_selection.value)]
+                    # d = [('Prompt', 'prompt', task['log_positive_prompt']),
+                    #      ('Negative Prompt', 'negative_prompt', task['log_negative_prompt']),
+                    #      ('Fooocus V2 Expansion', 'prompt_expansion', task['expansion']),
+                    #      ('Styles', 'styles', str(raw_style_selections)),
+                    #      ('Performance', 'performance', performance_selection.value)]
 
-                    if performance_selection.steps() != steps:
-                        d.append(('Steps', 'steps', steps))
+                    # if performance_selection.steps() != steps:
+                    #     d.append(('Steps', 'steps', steps))
 
-                    d += [('Resolution', 'resolution', str((width, height))),
-                          ('Guidance Scale', 'guidance_scale', guidance_scale),
-                          ('Sharpness', 'sharpness', sharpness),
-                          ('ADM Guidance', 'adm_guidance', str((
-                              modules.patch.patch_settings[pid].positive_adm_scale,
-                              modules.patch.patch_settings[pid].negative_adm_scale,
-                              modules.patch.patch_settings[pid].adm_scaler_end))),
-                          ('Base Model', 'base_model', base_model_name),
-                          ('Refiner Model', 'refiner_model', refiner_model_name),
-                          ('Refiner Switch', 'refiner_switch', refiner_switch)]
+                    # d += [('Resolution', 'resolution', str((width, height))),
+                    #       ('Guidance Scale', 'guidance_scale', guidance_scale),
+                    #       ('Sharpness', 'sharpness', sharpness),
+                    #       ('ADM Guidance', 'adm_guidance', str((
+                    #           modules.patch.patch_settings[pid].positive_adm_scale,
+                    #           modules.patch.patch_settings[pid].negative_adm_scale,
+                    #           modules.patch.patch_settings[pid].adm_scaler_end))),
+                    #       ('Base Model', 'base_model', base_model_name),
+                    #       ('Refiner Model', 'refiner_model', refiner_model_name),
+                    #       ('Refiner Switch', 'refiner_switch', refiner_switch)]
 
-                    if refiner_model_name != 'None':
-                        if overwrite_switch > 0:
-                            d.append(('Overwrite Switch', 'overwrite_switch', overwrite_switch))
-                        if refiner_swap_method != flags.refiner_swap_method:
-                            d.append(('Refiner Swap Method', 'refiner_swap_method', refiner_swap_method))
-                    if modules.patch.patch_settings[pid].adaptive_cfg != modules.config.default_cfg_tsnr:
-                        d.append(('CFG Mimicking from TSNR', 'adaptive_cfg', modules.patch.patch_settings[pid].adaptive_cfg))
+                    # if refiner_model_name != 'None':
+                    #     if overwrite_switch > 0:
+                    #         d.append(('Overwrite Switch', 'overwrite_switch', overwrite_switch))
+                    #     if refiner_swap_method != flags.refiner_swap_method:
+                    #         d.append(('Refiner Swap Method', 'refiner_swap_method', refiner_swap_method))
+                    # if modules.patch.patch_settings[pid].adaptive_cfg != modules.config.default_cfg_tsnr:
+                    #     d.append(('CFG Mimicking from TSNR', 'adaptive_cfg', modules.patch.patch_settings[pid].adaptive_cfg))
 
-                    d.append(('Sampler', 'sampler', sampler_name))
-                    d.append(('Scheduler', 'scheduler', scheduler_name))
-                    d.append(('Seed', 'seed', str(task['task_seed'])))
+                    # d.append(('Sampler', 'sampler', sampler_name))
+                    # d.append(('Scheduler', 'scheduler', scheduler_name))
+                    # d.append(('Seed', 'seed', str(task['task_seed'])))
 
-                    if freeu_enabled:
-                        d.append(('FreeU', 'freeu', str((freeu_b1, freeu_b2, freeu_s1, freeu_s2))))
+                    # if freeu_enabled:
+                    #     d.append(('FreeU', 'freeu', str((freeu_b1, freeu_b2, freeu_s1, freeu_s2))))
 
-                    for li, (n, w) in enumerate(loras):
-                        if n != 'None':
-                            d.append((f'LoRA {li + 1}', f'lora_combined_{li + 1}', f'{n} : {w}'))
+                    # for li, (n, w) in enumerate(loras):
+                    #     if n != 'None':
+                    #         d.append((f'LoRA {li + 1}', f'lora_combined_{li + 1}', f'{n} : {w}'))
 
                     metadata_parser = None
-                    if save_metadata_to_images:
-                        metadata_parser = modules.meta_parser.get_metadata_parser(metadata_scheme)
-                        metadata_parser.set_data(task['log_positive_prompt'], task['positive'],
-                                                 task['log_negative_prompt'], task['negative'],
-                                                 steps, base_model_name, refiner_model_name, loras)
-                    d.append(('Metadata Scheme', 'metadata_scheme', metadata_scheme.value if save_metadata_to_images else save_metadata_to_images))
-                    d.append(('Version', 'version', 'Fooocus v' + fooocus_version.version))
-                    img_paths.append(log(x, d, metadata_parser, output_format))
+                    # if save_metadata_to_images:
+                    #     metadata_parser = modules.meta_parser.get_metadata_parser(metadata_scheme)
+                    #     metadata_parser.set_data(task['log_positive_prompt'], task['positive'],
+                    #                              task['log_negative_prompt'], task['negative'],
+                    #                              steps, base_model_name, refiner_model_name, loras)
+                    # d.append(('Metadata Scheme', 'metadata_scheme', metadata_scheme.value if save_metadata_to_images else save_metadata_to_images))
+                    # d.append(('Version', 'version', 'Fooocus v' + fooocus_version.version))
+                    imgs_b64.append(log(x, output_format))
 
-                yield_result(async_task, img_paths, do_not_show_finished_images=len(tasks) == 1 or disable_intermediate_results)
+                yield_result(async_task, imgs_b64)
             except ldm_patched.modules.model_management.InterruptProcessingException as e:
                 if async_task.last_stop == 'skip':
                     print('User skipped')
@@ -928,3 +1080,4 @@ def worker():
 
 
 threading.Thread(target=worker, daemon=True).start()
+print("Inference worker started")
