@@ -37,7 +37,7 @@ input_params = {
     ],
     'inpaint_input_image': {
         'image': pil_to_base64(Image.open("./kitchen.jpg")),
-        'classes_to_avoid': ['walls'],
+        'classes_to_avoid': ['wall'],
     },
 }
 
@@ -48,7 +48,7 @@ task_params.map_dict_to_self(input_params)
 
 if 'inpaint_input_image' in input_params and input_params['inpaint_input_image'].get('image', None) is not None:
     task_params.inpaint_input_image = {}
-    classes_to_avoid = input_params['inpaint_input_image'].get('classes_to_avoid', ['walls'])
+    classes_to_avoid = input_params['inpaint_input_image'].get('classes_to_avoid', ['wall'])
     inpaint_img = input_params['inpaint_input_image'].get('image')
     inpaint_img = base64_to_pil(inpaint_img)
     segmentation_mask_generator = SegmentationMaskGenerator()
