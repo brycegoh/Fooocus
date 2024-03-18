@@ -172,7 +172,7 @@ class AsyncTask:
                 #     yield product
                 if flag == 'finish':
                     finished = True
-                yield product
+                yield r
 
         execution_time = time.perf_counter() - execution_start_time
         print(f'Total time: {execution_time:.2f} seconds')
