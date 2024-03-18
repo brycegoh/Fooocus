@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 
 root = os.path.dirname(os.path.abspath(__file__))
@@ -20,6 +21,8 @@ params = TaskParams(
 async_task = AsyncTask(params)
 
 for result in async_task.start():
+    if len(result) == 0:
+        time.sleep(1)
     print(result)
     
     if result[0] == 'finish':
