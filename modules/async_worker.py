@@ -767,10 +767,7 @@ def worker():
                 inpaint_respective_field = 1.0
 
             denoising_strength = inpaint_strength
-            print("saving inpaint")
-            from PIL import Image
-            Image.fromarray(inpaint_image).save('inpaint_image.png')
-            Image.fromarray(inpaint_mask).save('inpaint_mask.png')
+
             inpaint_worker.current_task = inpaint_worker.InpaintWorker(
                 image=inpaint_image,
                 mask=inpaint_mask,
