@@ -16,6 +16,7 @@ from modules.segmentationMaskGenerator import SegmentationMaskGenerator
 from modules.util import base64_to_np, base64_to_pil, pil_to_base64
 from modules.flags import ip_list
 from PIL import Image
+import numpy as np
 
 input_params = {
     'prompt': "Wooden cabinetry with black handles, white quartz countertop, pale green subway tile backsplash, built-in oven, stainless steel stove, glass-door upper cabinets with ceramic ware, hexagonal gray floor tiles, wooden table with matching stools, pendant lighting, large window with street view.",
@@ -52,7 +53,7 @@ if 'inpaint_input_image' in input_params and input_params['inpaint_input_image']
     inpaint_img = base64_to_pil(inpaint_img)
     segmentation_mask_generator = SegmentationMaskGenerator()
     mask = segmentation_mask_generator.get_mask(inpaint_img, classes_to_avoid)
-    task_params.inpaint_input_image['image'] = inpaint_img
+    task_params.inpaint_input_image['image'] = np.array(inpaint_img)
     task_params.inpaint_input_image['mask'] = mask
     Image.fromarray(mask).save("mask.png", "PNG")
 
