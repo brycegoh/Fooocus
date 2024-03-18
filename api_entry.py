@@ -49,7 +49,7 @@ if 'inpaint_input_image' in input_params and input_params['inpaint_input_image']
     task_params.inpaint_input_image = {}
     classes_to_avoid = input_params['inpaint_input_image'].get('classes_to_avoid', ['walls'])
     inpaint_img = input_params['inpaint_input_image'].get('image')
-    inpaint_img = base64_to_np(inpaint_img)
+    inpaint_img = base64_to_pil(inpaint_img)
     segmentation_mask_generator = SegmentationMaskGenerator()
     mask = segmentation_mask_generator.get_mask(inpaint_img, classes_to_avoid)
     task_params.inpaint_input_image['image'] = inpaint_img
