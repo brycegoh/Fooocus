@@ -24,7 +24,7 @@ class SegmentationMaskGenerator:
   
   def get_mask(self, img: np.ndarray, classes_to_avoid: List[str] = ['walls']):
     class_to_idx_map = get_ade_class_to_idx_map()
-    segmentation_map = self._run_segmentation(img)
+    segmentation_map = self.run_segmentation(img)
     idx_to_avoid = []
     for c in classes_to_avoid:
       if c not in class_to_idx_map:
