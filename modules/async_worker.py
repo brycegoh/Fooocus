@@ -33,7 +33,7 @@ class TaskParams(object):
         base_model_name: str = config.default_base_model_name,
         refiner_model_name: str = config.default_refiner_model_name,
         refiner_switch: float =  config.default_refiner_switch,
-        loras: List[Tuple[str, float]] = config.default_loras, #[ [lora_enabled, lora_model, lora_weight] ]
+        loras: List[Tuple[str, float]] = config.default_loras, #[ [lora_model, lora_weight] ]
         style_selections: List[str] = config.default_styles,
         # advanced params
         disable_preview: bool = True,
@@ -286,9 +286,8 @@ def worker():
 
     def apply_enabled_loras(loras):
         enabled_loras = []
-        for lora_enabled, lora_model, lora_weight in loras:
-            if lora_enabled:
-                enabled_loras.append([lora_model, lora_weight])
+        for lora_model, lora_weight in loras:
+            enabled_loras.append([lora_model, lora_weight])
 
         return enabled_loras
 
