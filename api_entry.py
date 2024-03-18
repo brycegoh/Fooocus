@@ -31,7 +31,7 @@ for result in async_task.start():
     flag, product = result
     print(flag)
     if flag == 'preview':
-        print(product)
+        continue
     if flag == 'results':
         print(product)
     if flag == 'finish':
@@ -44,6 +44,6 @@ def base64_to_pil(base64_string):
     decoded = base64.b64decode(base64_string)
     return Image.open(io.BytesIO(decoded))
 
-for idx, img_b64 in enumerate(final_result['images']):
+for idx, img_b64 in enumerate(final_result):
     img = base64_to_pil(img_b64)
     img.save(f"output_{idx}.png", "PNG")
