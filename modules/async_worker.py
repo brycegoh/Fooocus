@@ -136,6 +136,8 @@ class TaskParams(object):
         for key, value in params_dict.items():
             if hasattr(self, key):
                 setattr(self, key, value)
+        if len(self.image_prompts) > 0 and self.inpaint_input_image is not None:
+            self.mixing_image_prompt_and_inpaint = True
 
 class AsyncTask:
     def __init__(self, args: TaskParams):
@@ -444,6 +446,9 @@ def worker():
 
         goals = []
         tasks = []
+        # input_image_checkbox True
+        # current_tab ip
+        # mixing_image_prompt_and_inpaint False
         print("input_image_checkbox", input_image_checkbox)
         print("current_tab", current_tab)
         print("mixing_image_prompt_and_inpaint", mixing_image_prompt_and_inpaint)
