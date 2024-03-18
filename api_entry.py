@@ -92,8 +92,6 @@ for result in async_task.start():
         final_result = product
         break
 
-print(final_result)
-
 for idx, img_b64 in enumerate(final_result):
     img = base64_to_pil(img_b64)
     img.save(f"output_{idx}.png", "PNG")
