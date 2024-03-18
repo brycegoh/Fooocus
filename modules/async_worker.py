@@ -159,17 +159,7 @@ class AsyncTask:
             time.sleep(0.01)
             if len(self.yields) > 0:
                 r = self.yields.pop(0)
-                flag, product = r
-                # if flag == 'preview':
-
-                #     # help bad internet connection by skipping duplicated preview
-                #     if len(self.yields) > 0:  # if we have the next item
-                #         if self.yields[0][0] == 'preview':   # if the next item is also a preview
-                #             # print('Skipped one preview for better internet connection.')
-                #             continue
-                #     yield product
-                # if flag == 'results':
-                #     yield product
+                flag, _ = r
                 if flag == 'finish':
                     finished = True
                 yield r
