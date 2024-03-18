@@ -64,7 +64,7 @@ if 'image_prompts' in input_params:
         stop = img_prompt.get('stop', None)
         weight = img_prompt.get('weight', None)
         type = img_prompt.get('type', None)
-        if img is not None or stop is not None or weight is not None or type is not None:
+        if img is None or stop is None or weight is None or type is None:
             raise ValueError("Invalid image prompt")
         if type not in ip_list:
             raise ValueError("Invalid image prompt type")
