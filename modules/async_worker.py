@@ -444,7 +444,9 @@ def worker():
 
         goals = []
         tasks = []
-
+        print("input_image_checkbox", input_image_checkbox)
+        print("current_tab", current_tab)
+        print("mixing_image_prompt_and_inpaint", mixing_image_prompt_and_inpaint)
         if input_image_checkbox:
             if (current_tab == 'uov' or (
                     current_tab == 'ip' and mixing_image_prompt_and_vary_upscale)) \
