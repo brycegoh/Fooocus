@@ -10,11 +10,14 @@ import json
 
 from PIL import Image
 from hashlib import sha256
+import base64
+import io
 
 import modules.sdxl_styles
 
-LANCZOS = (Image.Resampling.LANCZOS if hasattr(Image, 'Resampling') else Image.LANCZOS)
+LANCZOS = Image.Resampling.LANCZOS if hasattr(Image, "Resampling") else Image.LANCZOS
 HASH_SHA256_LENGTH = 10
+
 
 def erode_or_dilate(x, k):
     k = int(k)
@@ -78,13 +81,31 @@ def resize_image(im, width, height, resize_mode=1):
         if ratio < src_ratio:
             fill_height = height // 2 - src_h // 2
             if fill_height > 0:
-                res.paste(resized.resize((width, fill_height), box=(0, 0, width, 0)), box=(0, 0))
-                res.paste(resized.resize((width, fill_height), box=(0, resized.height, width, resized.height)), box=(0, fill_height + src_h))
+                res.paste(
+                    resized.resize((width, fill_height), box=(0, 0, width, 0)),
+                    box=(0, 0),
+                )
+                res.paste(
+                    resized.resize(
+                        (width, fill_height),
+                        box=(0, resized.height, width, resized.height),
+                    ),
+                    box=(0, fill_height + src_h),
+                )
         elif ratio > src_ratio:
             fill_width = width // 2 - src_w // 2
             if fill_width > 0:
-                res.paste(resized.resize((fill_width, height), box=(0, 0, 0, height)), box=(0, 0))
-                res.paste(resized.resize((fill_width, height), box=(resized.width, 0, resized.width, height)), box=(fill_width + src_w, 0))
+                res.paste(
+                    resized.resize((fill_width, height), box=(0, 0, 0, height)),
+                    box=(0, 0),
+                )
+                res.paste(
+                    resized.resize(
+                        (fill_width, height),
+                        box=(resized.width, 0, resized.width, height),
+                    ),
+                    box=(fill_width + src_w, 0),
+                )
 
     return np.array(res)
 
@@ -103,7 +124,7 @@ def set_image_shape_ceil(im, shape_ceil):
 
     H_origin, W_origin, _ = im.shape
     H, W = H_origin, W_origin
-    
+
     for _ in range(256):
         current_shape_ceil = get_shape_ceil(H, W)
         if abs(current_shape_ceil - shape_ceil) < 0.1:
@@ -150,10 +171,10 @@ def join_prompts(*args, **kwargs):
         return ""
     if len(prompts) == 1:
         return prompts[0]
-    return ', '.join(prompts)
+    return ", ".join(prompts)
 
 
-def generate_temp_filename(folder='./outputs/', extension='png'):
+def generate_temp_filename(folder="./outputs/", extension="png"):
     current_time = datetime.datetime.now()
     date_string = current_time.strftime("%Y-%m-%d")
     time_string = current_time.strftime("%Y-%m-%d_%H-%M-%S")
@@ -175,7 +196,9 @@ def get_files_from_folder(folder_path, exensions=None, name_filter=None):
             relative_path = ""
         for filename in sorted(files, key=lambda s: s.casefold()):
             _, file_extension = os.path.splitext(filename)
-            if (exensions is None or file_extension.lower() in exensions) and (name_filter is None or name_filter in _):
+            if (exensions is None or file_extension.lower() in exensions) and (
+                name_filter is None or name_filter in _
+            ):
                 path = os.path.join(relative_path, filename)
                 filenames.append(path)
 
@@ -195,7 +218,7 @@ def calculate_sha256(filename, length=HASH_SHA256_LENGTH) -> str:
 
 
 def quote(text):
-    if ',' not in str(text) and '\n' not in str(text) and ':' not in str(text):
+    if "," not in str(text) and "\n" not in str(text) and ":" not in str(text):
         return text
 
     return json.dumps(text, ensure_ascii=False)
@@ -232,13 +255,13 @@ def unwrap_style_text_from_prompt(style_text, prompt):
             # two parts. This is an error, but we can't do anything about it.
             print(f"Unable to compare style text to prompt:\n{style_text}")
             print(f"Error: {e}")
-            return False, prompt, ''
+            return False, prompt, ""
 
         left_pos = stripped_prompt.find(left)
         right_pos = stripped_prompt.find(right)
         if 0 <= left_pos < right_pos:
-            real_prompt = stripped_prompt[left_pos + len(left):right_pos]
-            prompt = stripped_prompt.replace(left + real_prompt + right, '', 1)
+            real_prompt = stripped_prompt[left_pos + len(left) : right_pos]
+            prompt = stripped_prompt.replace(left + real_prompt + right, "", 1)
             if prompt.startswith(", "):
                 prompt = prompt[2:]
             if prompt.endswith(", "):
@@ -253,7 +276,7 @@ def unwrap_style_text_from_prompt(style_text, prompt):
                 prompt = prompt[:-2]
             return True, prompt, prompt
 
-    return False, prompt, ''
+    return False, prompt, ""
 
 
 def extract_original_prompts(style, prompt, negative_prompt):
@@ -269,13 +292,13 @@ def extract_original_prompts(style, prompt, negative_prompt):
         style.prompt, prompt
     )
     if not match_positive:
-        return False, prompt, negative_prompt, ''
+        return False, prompt, negative_prompt, ""
 
     match_negative, extracted_negative, _ = unwrap_style_text_from_prompt(
         style.negative_prompt, negative_prompt
     )
     if not match_negative:
-        return False, prompt, negative_prompt, ''
+        return False, prompt, negative_prompt, ""
 
     return True, extracted_positive, extracted_negative, real_prompt
 
@@ -284,23 +307,36 @@ def extract_styles_from_prompt(prompt, negative_prompt):
     extracted = []
     applicable_styles = []
 
-    for style_name, (style_prompt, style_negative_prompt) in modules.sdxl_styles.styles.items():
-        applicable_styles.append(PromptStyle(name=style_name, prompt=style_prompt, negative_prompt=style_negative_prompt))
+    for style_name, (
+        style_prompt,
+        style_negative_prompt,
+    ) in modules.sdxl_styles.styles.items():
+        applicable_styles.append(
+            PromptStyle(
+                name=style_name,
+                prompt=style_prompt,
+                negative_prompt=style_negative_prompt,
+            )
+        )
 
-    real_prompt = ''
+    real_prompt = ""
 
     while True:
         found_style = None
 
         for style in applicable_styles:
-            is_match, new_prompt, new_neg_prompt, new_real_prompt = extract_original_prompts(
-                style, prompt, negative_prompt
+            is_match, new_prompt, new_neg_prompt, new_real_prompt = (
+                extract_original_prompts(style, prompt, negative_prompt)
             )
             if is_match:
                 found_style = style
                 prompt = new_prompt
                 negative_prompt = new_neg_prompt
-                if real_prompt == '' and new_real_prompt != '' and new_real_prompt != prompt:
+                if (
+                    real_prompt == ""
+                    and new_real_prompt != ""
+                    and new_real_prompt != prompt
+                ):
                     real_prompt = new_real_prompt
                 break
 
@@ -311,17 +347,19 @@ def extract_styles_from_prompt(prompt, negative_prompt):
         extracted.append(found_style.name)
 
     # add prompt expansion if not all styles could be resolved
-    if prompt != '':
-        if real_prompt != '':
+    if prompt != "":
+        if real_prompt != "":
             extracted.append(modules.sdxl_styles.fooocus_expansion)
         else:
             # find real_prompt when only prompt expansion is selected
-            first_word = prompt.split(', ')[0]
-            first_word_positions = [i for i in range(len(prompt)) if prompt.startswith(first_word, i)]
+            first_word = prompt.split(", ")[0]
+            first_word_positions = [
+                i for i in range(len(prompt)) if prompt.startswith(first_word, i)
+            ]
             if len(first_word_positions) > 1:
-                real_prompt = prompt[:first_word_positions[-1]]
+                real_prompt = prompt[: first_word_positions[-1]]
                 extracted.append(modules.sdxl_styles.fooocus_expansion)
-                if real_prompt.endswith(', '):
+                if real_prompt.endswith(", "):
                     real_prompt = real_prompt[:-2]
 
     return list(reversed(extracted)), real_prompt, negative_prompt
@@ -352,11 +390,340 @@ def get_file_from_folder_list(name, folders):
 
 
 def ordinal_suffix(number: int) -> str:
-    return 'th' if 10 <= number % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(number % 10, 'th')
+    return (
+        "th"
+        if 10 <= number % 100 <= 20
+        else {1: "st", 2: "nd", 3: "rd"}.get(number % 10, "th")
+    )
 
 
 def makedirs_with_log(path):
     try:
         os.makedirs(path, exist_ok=True)
     except OSError as error:
-        print(f'Directory {path} could not be created, reason: {error}')
+        print(f"Directory {path} could not be created, reason: {error}")
+
+
+def base64_to_pil(base64_string):
+    decoded = base64.b64decode(base64_string)
+    return Image.open(io.BytesIO(decoded))
+
+
+def base64_to_np(base64_string):
+    decoded = base64.b64decode(base64_string)
+    return np.array(Image.open(io.BytesIO(decoded)))
+
+def pil_to_base64(pil_image):
+    buffered = io.BytesIO()
+    pil_image.save(buffered, format="PNG")
+    return base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+
+def get_ade_label_map():
+    return {
+        "0": "wall",
+        "1": "building",
+        "2": "sky",
+        "3": "floor",
+        "4": "tree",
+        "5": "ceiling",
+        "6": "road",
+        "7": "bed",
+        "8": "windowpane",
+        "9": "grass",
+        "10": "cabinet",
+        "11": "sidewalk",
+        "12": "person",
+        "13": "earth",
+        "14": "door",
+        "15": "table",
+        "16": "mountain",
+        "17": "plant",
+        "18": "curtain",
+        "19": "chair",
+        "20": "car",
+        "21": "water",
+        "22": "painting",
+        "23": "sofa",
+        "24": "shelf",
+        "25": "house",
+        "26": "sea",
+        "27": "mirror",
+        "28": "rug",
+        "29": "field",
+        "30": "armchair",
+        "31": "seat",
+        "32": "fence",
+        "33": "desk",
+        "34": "rock",
+        "35": "wardrobe",
+        "36": "lamp",
+        "37": "bathtub",
+        "38": "railing",
+        "39": "cushion",
+        "40": "base",
+        "41": "box",
+        "42": "column",
+        "43": "signboard",
+        "44": "chest of drawers",
+        "45": "counter",
+        "46": "sand",
+        "47": "sink",
+        "48": "skyscraper",
+        "49": "fireplace",
+        "50": "refrigerator",
+        "51": "grandstand",
+        "52": "path",
+        "53": "stairs",
+        "54": "runway",
+        "55": "case",
+        "56": "pool table",
+        "57": "pillow",
+        "58": "screen door",
+        "59": "stairway",
+        "60": "river",
+        "61": "bridge",
+        "62": "bookcase",
+        "63": "blind",
+        "64": "coffee table",
+        "65": "toilet",
+        "66": "flower",
+        "67": "book",
+        "68": "hill",
+        "69": "bench",
+        "70": "countertop",
+        "71": "stove",
+        "72": "palm",
+        "73": "kitchen island",
+        "74": "computer",
+        "75": "swivel chair",
+        "76": "boat",
+        "77": "bar",
+        "78": "arcade machine",
+        "79": "hovel",
+        "80": "bus",
+        "81": "towel",
+        "82": "light",
+        "83": "truck",
+        "84": "tower",
+        "85": "chandelier",
+        "86": "awning",
+        "87": "streetlight",
+        "88": "booth",
+        "89": "television receiver",
+        "90": "airplane",
+        "91": "dirt track",
+        "92": "apparel",
+        "93": "pole",
+        "94": "land",
+        "95": "bannister",
+        "96": "escalator",
+        "97": "ottoman,ouf,pouffe,puff,hassock",
+        "98": "bottle",
+        "99": "buffet",
+        "100": "poster",
+        "101": "stage",
+        "102": "van",
+        "103": "ship",
+        "104": "fountain",
+        "105": "conveyer belt",
+        "106": "canopy",
+        "107": "washer",
+        "108": "plaything",
+        "109": "swimming pool",
+        "110": "stool",
+        "111": "barrel",
+        "112": "basket",
+        "113": "waterfall",
+        "114": "tent",
+        "115": "bag",
+        "116": "minibike",
+        "117": "cradle",
+        "118": "oven",
+        "119": "ball",
+        "120": "food",
+        "121": "step",
+        "122": "tank",
+        "123": "trade name",
+        "124": "microwave",
+        "125": "pot",
+        "126": "animal",
+        "127": "bicycle",
+        "128": "lake",
+        "129": "dishwasher",
+        "130": "screen",
+        "131": "blanket",
+        "132": "sculpture",
+        "133": "hood",
+        "134": "sconce",
+        "135": "vase",
+        "136": "traffic light",
+        "137": "tray",
+        "138": "ashcan",
+        "139": "fan",
+        "140": "pier",
+        "141": "crt screen",
+        "142": "plate",
+        "143": "monitor",
+        "144": "bulletin board",
+        "145": "shower",
+        "146": "radiator",
+        "147": "glass",
+        "148": "clock",
+        "149": "flag",
+    }
+
+
+def get_ade_class_to_idx_map():
+    return {
+        "wall": 0,
+        "building": 1,
+        "sky": 2,
+        "floor": 3,
+        "tree": 4,
+        "ceiling": 5,
+        "road": 6,
+        "bed": 7,
+        "windowpane": 8,
+        "grass": 9,
+        "cabinet": 10,
+        "sidewalk": 11,
+        "person": 12,
+        "earth": 13,
+        "door": 14,
+        "table": 15,
+        "mountain": 16,
+        "plant": 17,
+        "curtain": 18,
+        "chair": 19,
+        "car": 20,
+        "water": 21,
+        "painting": 22,
+        "sofa": 23,
+        "shelf": 24,
+        "house": 25,
+        "sea": 26,
+        "mirror": 27,
+        "rug": 28,
+        "field": 29,
+        "armchair": 30,
+        "seat": 31,
+        "fence": 32,
+        "desk": 33,
+        "rock": 34,
+        "wardrobe": 35,
+        "lamp": 36,
+        "bathtub": 37,
+        "railing": 38,
+        "cushion": 39,
+        "base": 40,
+        "box": 41,
+        "column": 42,
+        "signboard": 43,
+        "chest of drawers": 44,
+        "counter": 45,
+        "sand": 46,
+        "sink": 47,
+        "skyscraper": 48,
+        "fireplace": 49,
+        "refrigerator": 50,
+        "grandstand": 51,
+        "path": 52,
+        "stairs": 53,
+        "runway": 54,
+        "case": 55,
+        "pool table": 56,
+        "pillow": 57,
+        "screen door": 58,
+        "stairway": 59,
+        "river": 60,
+        "bridge": 61,
+        "bookcase": 62,
+        "blind": 63,
+        "coffee table": 64,
+        "toilet": 65,
+        "flower": 66,
+        "book": 67,
+        "hill": 68,
+        "bench": 69,
+        "countertop": 70,
+        "stove": 71,
+        "palm": 72,
+        "kitchen island": 73,
+        "computer": 74,
+        "swivel chair": 75,
+        "boat": 76,
+        "bar": 77,
+        "arcade machine": 78,
+        "hovel": 79,
+        "bus": 80,
+        "towel": 81,
+        "light": 82,
+        "truck": 83,
+        "tower": 84,
+        "chandelier": 85,
+        "awning": 86,
+        "streetlight": 87,
+        "booth": 88,
+        "television receiver": 89,
+        "airplane": 90,
+        "dirt track": 91,
+        "apparel": 92,
+        "pole": 93,
+        "land": 94,
+        "bannister": 95,
+        "escalator": 96,
+        "ottoman,ouf,pouffe,puff,hassock": 97,
+        "bottle": 98,
+        "buffet": 99,
+        "poster": 100,
+        "stage": 101,
+        "van": 102,
+        "ship": 103,
+        "fountain": 104,
+        "conveyer belt": 105,
+        "canopy": 106,
+        "washer": 107,
+        "plaything": 108,
+        "swimming pool": 109,
+        "stool": 110,
+        "barrel": 111,
+        "basket": 112,
+        "waterfall": 113,
+        "tent": 114,
+        "bag": 115,
+        "minibike": 116,
+        "cradle": 117,
+        "oven": 118,
+        "ball": 119,
+        "food": 120,
+        "step": 121,
+        "tank": 122,
+        "trade name": 123,
+        "microwave": 124,
+        "pot": 125,
+        "animal": 126,
+        "bicycle": 127,
+        "lake": 128,
+        "dishwasher": 129,
+        "screen": 130,
+        "blanket": 131,
+        "sculpture": 132,
+        "hood": 133,
+        "sconce": 134,
+        "vase": 135,
+        "traffic light": 136,
+        "tray": 137,
+        "ashcan": 138,
+        "fan": 139,
+        "pier": 140,
+        "crt screen": 141,
+        "plate": 142,
+        "monitor": 143,
+        "bulletin board": 144,
+        "shower": 145,
+        "radiator": 146,
+        "glass": 147,
+        "clock": 148,
+        "flag": 149,
+    }

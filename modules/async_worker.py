@@ -14,7 +14,6 @@ class TaskParams(object):
         self, 
         prompt: str,
         
-        
         # default params
         uov_input_image: np.ndarray | None = None,
         uov_method: str = 'Disabled', # [ 'Disabled', 'Vary (Subtle)', 'Vary (Strong)', 'Upscale (1.5x)', 'Upscale (2x)', 'Upscale (Fast 2x)', 'Upscale (Custom)']
@@ -134,6 +133,11 @@ class TaskParams(object):
             MIN_SEED = 0
             MAX_SEED = 2**63 - 1
             self.image_seed = random.randint(MIN_SEED, MAX_SEED)
+
+    def map_dict_to_self(self, params_dict):
+        for key, value in params_dict.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
 class AsyncTask:
     def __init__(self, args: TaskParams):
@@ -472,7 +476,7 @@ def worker():
                             inpaint_mask_image_upload = resample_image(inpaint_mask_image_upload, width=W, height=H)
                             inpaint_mask_image_upload = np.mean(inpaint_mask_image_upload, axis=2)
                             inpaint_mask_image_upload = (inpaint_mask_image_upload > 127).astype(np.uint8) * 255
-                            inpaint_mask = np.maximum(inpaint_mask, inpaint_mask_image_upload)
+                            inpaint_mask = inpaint_mask_image_upload
 
                 if int(inpaint_erode_or_dilate) != 0:
                     inpaint_mask = erode_or_dilate(inpaint_mask, inpaint_erode_or_dilate)

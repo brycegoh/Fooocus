@@ -174,6 +174,7 @@ path_vae_approx = get_dir_or_set_default('path_vae_approx', '../models/vae_appro
 path_upscale_models = get_dir_or_set_default('path_upscale_models', '../models/upscale_models/')
 path_inpaint = get_dir_or_set_default('path_inpaint', '../models/inpaint/')
 path_controlnet = get_dir_or_set_default('path_controlnet', '../models/controlnet/')
+path_segmentation = get_dir_or_set_default('path_segmentation', '../models/segmentation/')
 path_clip_vision = get_dir_or_set_default('path_clip_vision', '../models/clip_vision/')
 path_fooocus_expansion = get_dir_or_set_default('path_fooocus_expansion', '../models/prompt_expansion/fooocus_expansion')
 path_outputs = get_path_output()
