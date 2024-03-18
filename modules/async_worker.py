@@ -483,6 +483,9 @@ def worker():
                     inpaint_mask = 255 - inpaint_mask
 
                 inpaint_image = HWC3(inpaint_image)
+                print(isinstance(inpaint_image, np.ndarray))
+                print(isinstance(inpaint_mask, np.ndarray))
+                print(np.any(inpaint_mask > 127))
                 if isinstance(inpaint_image, np.ndarray) and isinstance(inpaint_mask, np.ndarray) \
                         and (np.any(inpaint_mask > 127) or len(outpaint_selections) > 0):
                     progressbar(async_task, 1, 'Downloading upscale models ...')
