@@ -158,7 +158,8 @@ class AsyncTask:
         while not finished:
             time.sleep(0.01)
             if len(self.yields) > 0:
-                yield self.yields.pop(0)
+                r = self.yields.pop(0)
+                flag, product = r
                 # if flag == 'preview':
 
                 #     # help bad internet connection by skipping duplicated preview
@@ -169,9 +170,9 @@ class AsyncTask:
                 #     yield product
                 # if flag == 'results':
                 #     yield product
-                # if flag == 'finish':
-                #     yield product
-                #     finished = True
+                if flag == 'finish':
+                    finished = True
+                yield product
 
         execution_time = time.perf_counter() - execution_start_time
         print(f'Total time: {execution_time:.2f} seconds')
@@ -1063,6 +1064,7 @@ def worker():
             print(task)
             try:
                 handler(task)
+                print("append to finish")
                 task.yields.append(['finish', task.results])
                 pipeline.prepare_text_encoder(async_call=True)
             except:
