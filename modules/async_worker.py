@@ -733,7 +733,7 @@ def worker():
             width = W * 8
             height = H * 8
             print(f'Final resolution is {str((height, width))}.')
-
+        print("goals ", goals)
         if 'inpaint' in goals:
             if len(outpaint_selections) > 0:
                 H, W, C = inpaint_image.shape
@@ -762,6 +762,7 @@ def worker():
                 inpaint_respective_field = 1.0
 
             denoising_strength = inpaint_strength
+            print("saving inpaint")
             from PIL import Image
             Image.fromarray(inpaint_image).save('inpaint_image.png')
             Image.fromarray(inpaint_mask).save('inpaint_mask.png')
