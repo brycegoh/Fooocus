@@ -158,20 +158,20 @@ class AsyncTask:
         while not finished:
             time.sleep(0.01)
             if len(self.yields) > 0:
-                flag, product = self.yields.pop(0)
-                if flag == 'preview':
+                yield self.yields.pop(0)
+                # if flag == 'preview':
 
-                    # help bad internet connection by skipping duplicated preview
-                    if len(self.yields) > 0:  # if we have the next item
-                        if self.yields[0][0] == 'preview':   # if the next item is also a preview
-                            # print('Skipped one preview for better internet connection.')
-                            continue
-                    yield product
-                if flag == 'results':
-                    yield product
-                if flag == 'finish':
-                    yield product
-                    finished = True
+                #     # help bad internet connection by skipping duplicated preview
+                #     if len(self.yields) > 0:  # if we have the next item
+                #         if self.yields[0][0] == 'preview':   # if the next item is also a preview
+                #             # print('Skipped one preview for better internet connection.')
+                #             continue
+                #     yield product
+                # if flag == 'results':
+                #     yield product
+                # if flag == 'finish':
+                #     yield product
+                #     finished = True
 
         execution_time = time.perf_counter() - execution_start_time
         print(f'Total time: {execution_time:.2f} seconds')
