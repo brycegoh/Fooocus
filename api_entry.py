@@ -1,8 +1,6 @@
 import os
 import sys
 
-from modules.async_worker import TaskParams, AsyncTask
-
 
 root = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(root)
