@@ -16,9 +16,7 @@ class SegmentationMaskGenerator:
     self.semantic_model.to('cuda:0')
     inputs = self.semantic_processor(images=image, task_inputs=["semantic"], return_tensors="pt").to('cuda:0')
     outputs = self.semantic_model(**inputs)
-    print(outputs)
     predicted_semantic_map = self.semantic_processor.post_process_semantic_segmentation(outputs, target_sizes=[image.size[::-1]])
-    print(predicted_semantic_map)
     predicted_semantic_map=predicted_semantic_map[0]
     self.semantic_model.to('cpu')
     inputs.to('cpu')
