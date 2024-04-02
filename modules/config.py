@@ -541,7 +541,7 @@ def downloading_sdxl_lcm_lora():
 
 def downloading_controlnet_canny():
     load_file_from_url(
-        url='https://huggingface.co/lllyasviel/misc/resolve/main/control-lora-canny-rank128.safetensors',
+        url='https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank256/control-lora-canny-rank256.safetensors',
         model_dir=path_controlnet,
         file_name='control-lora-canny-rank128.safetensors'
     )
@@ -558,7 +558,7 @@ def downloading_controlnet_cpds():
 
 def downloading_controlnet_depth():
     load_file_from_url(
-        url='https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-depth-rank128.safetensors',
+        url='https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank256/control-lora-depth-rank256.safetensors',
         model_dir=path_controlnet,
         file_name='control-lora-depth-rank128.safetensors'
     )
