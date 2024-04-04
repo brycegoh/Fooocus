@@ -92,7 +92,7 @@ metadata_scheme = [
 
 lora_count = 5
 
-controlnet_image_count = 4
+controlnet_image_count = 10
 
 
 class Steps(IntEnum):
