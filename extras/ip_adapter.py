@@ -214,7 +214,6 @@ def patch_model(model, tasks):
             k = [context_attn2]
             v = [value_attn2]
             b, _, _ = q.shape
-            print(f"ip tasks: {len(tasks)}")
             for (cs, ucs), cn_start, cn_stop, cn_weight in tasks:
                 if current_step > cn_start and current_step < cn_stop:
                     ip_k_c = cs[ip_index * 2].to(q)
