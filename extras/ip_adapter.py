@@ -216,7 +216,8 @@ def patch_model(model, tasks):
             b, _, _ = q.shape
 
             for (cs, ucs), cn_start, cn_stop, cn_weight in tasks:
-                if current_step < cn_stop:
+                if current_step > cn_start and current_step < cn_stop:
+                    print(f"applying IP adapter {ip_index} at step {current_step}")
                     ip_k_c = cs[ip_index * 2].to(q)
                     ip_v_c = cs[ip_index * 2 + 1].to(q)
                     ip_k_uc = ucs[ip_index * 2].to(q)
