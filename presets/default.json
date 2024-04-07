@@ -1,7 +1,7 @@
 {
-    "default_model": "sd_xl_base_1.0_0.9vae.safetensors",
-    "default_refiner": "sd_xl_refiner_1.0_0.9vae.safetensors",
-    "default_refiner_switch": 0.8,
+    "default_model": "Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors",
+    "default_refiner": "None",
+    "default_refiner_switch": 0.5,
     "default_loras": [
         [
             "sd_xl_offset_example-lora_1.0.safetensors",
@@ -38,12 +38,19 @@
     ],
     "default_aspect_ratio": "1152*896",
     "checkpoint_downloads": {
-        "sd_xl_base_1.0_0.9vae.safetensors": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors",
-        "sd_xl_refiner_1.0_0.9vae.safetensors": "https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0/resolve/main/sd_xl_refiner_1.0_0.9vae.safetensors"
+        "juggernautXL_v8Rundiffusion.safetensors": "https://huggingface.co/lllyasviel/fav_models/resolve/main/fav/juggernautXL_v8Rundiffusion.safetensors",
+        "Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors": "https://huggingface.co/RunDiffusion/Juggernaut-XL-v9/resolve/main/Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors",
+        "photon_v1": "https://civitai.com/api/download/models/90072"
     },
     "embeddings_downloads": {},
     "lora_downloads": {
         "sd_xl_offset_example-lora_1.0.safetensors": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_offset_example-lora_1.0.safetensors"
     },
-    "previous_default_models": []
+    "previous_default_models": [
+        "juggernautXL_version8Rundiffusion.safetensors",
+        "juggernautXL_version7Rundiffusion.safetensors",
+        "juggernautXL_v7Rundiffusion.safetensors",
+        "juggernautXL_version6Rundiffusion.safetensors",
+        "juggernautXL_v6Rundiffusion.safetensors"
+    ]
 }
